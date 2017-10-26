@@ -7,6 +7,9 @@ painlessMesh  mesh;
 
 size_t logServerId = 0;
 
+
+String topic_name = "temperature";
+String topic_value;
 // Send message to the logServer every 10 seconds
 Task myLoggingTask(10000, TASK_FOREVER, []() {
     DynamicJsonBuffer jsonBuffer;
