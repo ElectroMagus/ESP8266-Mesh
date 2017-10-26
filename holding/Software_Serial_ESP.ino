@@ -1,5 +1,5 @@
 #include <Adafruit_GPS.h>
-#include <SoftwareSerial.h>
+
 
 
 // Mesh Stuff
@@ -37,7 +37,7 @@ SoftwareSerial mySerial(14, 12); // RX, TX
 
 void setup() {
   // Open serial communications and wait for port to open:
-  Serial.begin(115200);
+  Serial.begin(57600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
