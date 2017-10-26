@@ -30,6 +30,27 @@ Task myLoggingTask(10000, TASK_FOREVER, []() {
     }
   );
 
+
+  Task myAlertingTask(2000, TASK_FOREVER, []() {
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& msg = jsonBuffer.createObject();
+      msg["topic"] = "alert";
+      msg["value"] = "motion";
+
+      String str;
+      msg.printTo(str);
+      if (logServerId == 0) // If we don't know the logServer yet
+          mesh.sendBroadcast(str);
+      else
+          mesh.sendSingle(logServerId, str);
+
+          // log to serial
+            msg.printTo(Serial);
+            Serial.printf("\n");
+      }
+    );
+
+
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("logClient: Received from %u msg=%s\n", from, msg.c_str());
 
