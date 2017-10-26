@@ -1,7 +1,3 @@
-#include <Adafruit_GPS.h>
-
-
-
 // Mesh Stuff
 #include "painlessMesh.h"
 #define   MESH_PREFIX     "MPan"
@@ -15,8 +11,8 @@ size_t logServerId = 0;
 Task myLoggingTask(10000, TASK_FOREVER, []() {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& msg = jsonBuffer.createObject();
-    msg["topic"] = "sensor";
-    msg["value"] = random(0, 180);
+    msg["topic"] = topic_name;
+    msg["value"] = topic_value;
 
     String str;
     msg.printTo(str);
@@ -25,41 +21,11 @@ Task myLoggingTask(10000, TASK_FOREVER, []() {
     else
         mesh.sendSingle(logServerId, str);
 
-    // log to serial
-    msg.printTo(Serial);
-    Serial.printf("\n");
-});
-
-// End Mesh Stuff
-
-
-SoftwareSerial mySerial(14, 12); // RX, TX
-
-void setup() {
-  // Open serial communications and wait for port to open:
-  Serial.begin(57600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-  Serial.println("Connected to debug port.");
-
-  // Mesh Stuff
-  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
-  mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT, STA_AP, AUTH_WPA2_PSK, 6 );
-  mesh.onReceive(&receivedCallback);
-    // Add the task to the mesh scheduler
-    mesh.scheduler.addTask(myLoggingTask);
-    myLoggingTask.enable();
-
-  mySerial.begin(9600);
-  Serial.println("Connected to GPS via Serial");
-
-
-}
-
-void loop() { // run over and over
-  mesh.update();
-}
+        // log to serial
+          msg.printTo(Serial);
+          Serial.printf("\n");
+    }
+  );
 
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("logClient: Received from %u msg=%s\n", from, msg.c_str());
