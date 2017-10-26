@@ -1,5 +1,20 @@
-#include <Adafruit_GPS.h>
+#include <TinyGPS++.h>
 #include <SoftwareSerial.h>
+
+String location;
+
+static const int RXPin = 12, TXPin = 14;
+static const uint32_t GPSBaud = 9600;
+SoftwareSerial ss(RXPin, TXPin);
+TinyGPSPlus gps;
+
+
+String displayInfo()  {
+  while (ss.available() > 0)
+    gps.encode(ss.read());
+    location = String(gps.location.lat(), 6) + " " + String(gps.location.lng(), 6) + " " + String(gps.altitude.meters()) + " " + String(gps.speed.mph());
+  return location;
+};
 
 
 // Mesh Stuff
@@ -15,8 +30,8 @@ size_t logServerId = 0;
 Task myLoggingTask(10000, TASK_FOREVER, []() {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& msg = jsonBuffer.createObject();
-    msg["topic"] = "sensor";
-    msg["value"] = random(0, 180);
+    msg["topic"] = "location";
+    msg["value"] = location;
 
     String str;
     msg.printTo(str);
@@ -33,7 +48,6 @@ Task myLoggingTask(10000, TASK_FOREVER, []() {
 // End Mesh Stuff
 
 
-SoftwareSerial mySerial(14, 12); // RX, TX
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -51,15 +65,28 @@ void setup() {
     mesh.scheduler.addTask(myLoggingTask);
     myLoggingTask.enable();
 
-  mySerial.begin(9600);
-  Serial.println("Connected to GPS via Serial");
 
 
-}
+
+};
 
 void loop() { // run over and over
   mesh.update();
-}
+  location = displayInfo();
+
+  // This sketch displays information every time a new sentence is correctly encoded.
+  /*
+   while (ss.available() > 0)
+     if (gps.encode(ss.read())) {
+       displayInfo();
+     };
+   if (millis() > 5000 && gps.charsProcessed() < 10)
+   {
+     Serial.println(F("No GPS detected: check wiring."));
+     while(true);
+   };
+*/
+};
 
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("logClient: Received from %u msg=%s\n", from, msg.c_str());
