@@ -13,7 +13,8 @@
 #define MOTION_PIN D6 // PIR Motion Sensor
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
-int lastRun = 0;
+unsigned long lastRun = 0;
+const long sensorDelay = 5000; // 5-seconds
 int diff = 0;
 
 void setup() {
@@ -42,17 +43,22 @@ void setup() {
 
 };
 
-void loop() { // run over and over
-    // Sensor Stuff
-
-    int here = now();
-    diff = here - lastRun;
-    //Serial.println(diff);
+   // Sensor Stuff
+void getSensorData(){
   float temp;
   DS18B20.requestTemperatures();
   temp = DS18B20.getTempCByIndex(0);
   temp = temp * 1.8 + 32;
   topic_value = String(temp);
+}
+
+void loop() { // run over and over
+
+  unsigned long now = millis(); // time since boot
+  if (lastRun + sensorDelay <= now) { // if the 'lastRun' + 'sensorDelay' already happened(before now) 
+    lastRun = now; 
+    getSensorData();
+  }
   mesh.update();
 }
 
